@@ -4,6 +4,7 @@ CREATE DATABASE IF NOT EXISTS DEFAULT_DB;
 -- Koriscenje default baze podataka
 USE DEFAULT_DB;
 --ovo je komentar
+-- ovo je novi 
 -- Kreiranje tabele za korisnike
 CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY AUTO_INCREMENT,
