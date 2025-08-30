@@ -1,34 +1,33 @@
-import express from 'express';
-import cors from 'cors';
-import { IAuthService } from './Domain/services/auth/IAuthService';
-import { AuthService } from './Services/auth/AuthService';
-import { IUserRepository } from './Domain/repositories/users/IUserRepository';
-import { UserRepository } from './Database/repositories/users/UserRepository';
-import { AuthController } from './WebAPI/controllers/AuthController';
-import { IUserService } from './Domain/services/users/IUserService';
-import { UserService } from './Services/users/UserService';
-import { UserController } from './WebAPI/controllers/UserController';
+// server/src/app.ts
+import express from "express";
+import cors from "cors";
+import { AuthControler } from "./WebAPI/controllers/AuthController";
+import { IAuthService } from "./Domain/services/auth/IAuthService";
+import { AuthService } from "./Services/auth/AuthService";
+import { UserRepository } from "./Database/repositories/user/UserRepository";
+import { IUserRepository } from "./Domain/repositories/user/IUserRepository";
+import { FaultController } from "./WebAPI/controllers/FaultController";
+import { FaultRepository } from "./Database/repositories/fault/FaultRepository";
+import { FaultService } from "./Services/fault/FaultService";
+import { IFaultService } from "./Domain/services/fault/IFaultService";
+import { IFaultRepository } from "./Domain/repositories/fault/IFaultRepository";
 
-require('dotenv').config();
-
+require("dotenv").config();
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Repositories
-const userRepository: IUserRepository = new UserRepository();
+const userRepo: IUserRepository = new UserRepository();
+const authService: IAuthService = new AuthService(userRepo);
+const authControler = new AuthControler(authService);
 
-// Services
-const authService: IAuthService = new AuthService(userRepository);
-const userService: IUserService = new UserService(userRepository);
+const faultRepo: IFaultRepository = new FaultRepository();
+const faultService: IFaultService = new FaultService(faultRepo);
+const faultController = new FaultController(faultService);
 
-// WebAPI routes
-const authController = new AuthController(authService);
-const userController = new UserController(userService);
 
-// Registering routes
-app.use('/api/v1', authController.getRouter());
-app.use('/api/v1', userController.getRouter());
+app.use("/api/v1", authControler.getRouter());
+app.use("/api/v1/faults", faultController.getRouter());
 
 export default app;

@@ -1,27 +1,56 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { validacijaPodatakaAuth } from "../../api_services/validators/auth/AuthValidator";
-import type { AuthFormProps } from "../../types/props/auth_form_props/AuthFormProps";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/useAuthHook";
+import { validacijaPodatakaAuth } from "../../api_services/validators/auth/AuthValidator";
+import type { AuthFormProps } from "../../types/props/auth_form_props/AuthValidator";
+import type { JwtTokenClaims } from "../../types/auth/JwtTokenClaims";
+import { jwtDecode } from "jwt-decode";
 
 export function PrijavaForma({ authApi }: AuthFormProps) {
   const [korisnickoIme, setKorisnickoIme] = useState("");
   const [lozinka, setLozinka] = useState("");
   const [greska, setGreska] = useState("");
   const { login } = useAuth();
+  const navigate = useNavigate();
+
+  interface LocationState {
+    korisnickoIme?: string;
+    lozinka?: string;
+  }
+
+  const location = useLocation();
+  useEffect(() => {
+    const state = location.state as LocationState;
+    if (state?.korisnickoIme) setKorisnickoIme(state.korisnickoIme);
+    if (state?.lozinka) setLozinka(state.lozinka);
+  }, [location.state]);
 
   const podnesiFormu = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const validacija = validacijaPodatakaAuth(korisnickoIme, lozinka);
     if (!validacija.uspesno) {
-      setGreska(validacija.poruka ?? "Неисправни подаци");
+      setGreska(validacija.poruka ?? "Neispravni podaci");
       return;
     }
 
     const odgovor = await authApi.prijava(korisnickoIme, lozinka);
     if (odgovor.success && odgovor.data) {
-      login(odgovor.data);
+      const token = odgovor.data as string;
+
+      let claims: JwtTokenClaims | null = null;
+      try {
+        claims = jwtDecode<JwtTokenClaims>(token);
+      } catch {
+        setGreska("Neispravan token sa servera.");
+        return;
+      }
+      if (!claims?.uloga) {
+        setGreska("Nedostaje uloga u tokenu.");
+        return;
+      }
+      login(token);
+      navigate(`/${claims.uloga}-dashboard`, { replace: true });
     } else {
       setGreska(odgovor.message);
       setKorisnickoIme("");
@@ -30,36 +59,32 @@ export function PrijavaForma({ authApi }: AuthFormProps) {
   };
 
   return (
-    <div className="bg-white/30 backdrop-blur-lg shadow-md rounded-2xl p-10 w-full max-w-md border border-blue-400">
-      <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Пријава</h1>
-      <form onSubmit={podnesiFormu} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Корисничко име"
-          value={korisnickoIme}
-          onChange={(e) => setKorisnickoIme(e.target.value)}
-          className="w-full bg-white/40 px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
-        <input
-          type="password"
-          placeholder="Лозинка"
-          value={lozinka}
-          onChange={(e) => setLozinka(e.target.value)}
-          className="w-full bg-white/40 px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
-        {greska && <p className="text-md text-center text-red-700/80 font-medium">{greska}</p>}
-        <button
-          type="submit"
-          className="w-full bg-blue-700/70 hover:bg-blue-700/90 text-white py-2 rounded-xl transition"
-        >
-          Пријави се
-        </button>
+    <div className="form-container">
+      <h1>Prijava</h1>
+      <form onSubmit={podnesiFormu}>
+        <div className="input-group">
+          <label htmlFor="korisnickoIme">Korisničko ime</label>
+          <input
+            id="korisnickoIme"
+            type="text"
+            value={korisnickoIme}
+            onChange={(e) => setKorisnickoIme(e.target.value)}
+          />
+        </div>
+        <div className="input-group">
+          <label htmlFor="lozinka">Lozinka</label>
+          <input
+            id="lozinka"
+            type="password"
+            value={lozinka}
+            onChange={(e) => setLozinka(e.target.value)}
+          />
+        </div>
+        {greska && <p className="error">{greska}</p>}
+        <button type="submit">Prijavi se</button>
       </form>
-      <p className="text-center text-sm mt-4">
-        Немате налог?{" "}
-        <Link to="/register" className="text-blue-700 hover:underline">
-          Региструјте се
-        </Link>
+      <p className="form-footer">
+        Nemate nalog? <Link to="/register">Registruj se</Link>
       </p>
     </div>
   );
