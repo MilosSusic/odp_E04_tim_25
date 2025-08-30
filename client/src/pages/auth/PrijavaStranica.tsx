@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { PrijavaForma } from "../../components/auth/PrijavaForma";
-import type { IAuthAPIService } from "../../api_services/auth/IAuthAPIService";
 import { useAuth } from "../../hooks/auth/useAuthHook";
+import type { IAuthAPIService } from "../../api_services/auth/IAuthSevice";
 
 interface LoginPageProps {
   authApi: IAuthAPIService;
@@ -11,14 +11,21 @@ interface LoginPageProps {
 export default function PrijavaStranica({ authApi }: LoginPageProps) {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (isAuthenticated && user) 
-      navigate(`/${user.uloga}-dashboard`);
-  }, [isAuthenticated, navigate, user]);
+    if (!isAuthenticated || !user?.uloga) return;
+
+    const target = `/${user.uloga}-dashboard`;
+    if (location.pathname !== target) {
+      navigate(target, { replace: true });
+    }
+  }, [isAuthenticated, user?.uloga, location.pathname, navigate]);
+
+  if (isAuthenticated && user?.uloga) return null;
 
   return (
-    <main className="min-h-screen bg-gradient-to-tr from-slate-600/75 to-orange-800/70 flex items-center justify-center">
+    <main className="app-background">
       <PrijavaForma authApi={authApi} />
     </main>
   );

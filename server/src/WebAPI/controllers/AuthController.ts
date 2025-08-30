@@ -1,102 +1,90 @@
-import { Request, Response, Router } from 'express';
-import { IAuthService } from '../../Domain/services/auth/IAuthService';
-import { validacijaPodatakaAuth } from '../validators/auth/RegisterValidator';
+import { Router, Request, Response } from "express";
+import { IAuthService } from "../../Domain/services/auth/IAuthService";
+import { validacijaPodatakaAuth } from "../validators/auth/AuthRequestValidator";
 import jwt from "jsonwebtoken";
 
-export class AuthController {
+export class AuthControler {
   private router: Router;
-  private authService: IAuthService;
+  private authUser: IAuthService;
 
   constructor(authService: IAuthService) {
     this.router = Router();
-    this.authService = authService;
+    this.authUser = authService;
     this.initializeRoutes();
   }
 
-  private initializeRoutes(): void {
-    this.router.post('/auth/login', this.prijava.bind(this));
-    this.router.post('/auth/register', this.registracija.bind(this));
+  private initializeRoutes() {
+    this.router.post("/auth/login", this.prijava.bind(this));
+    this.router.post("/auth/register", this.registracija.bind(this));
   }
 
-  /**
-   * POST /api/v1/auth/login
-   * Prijava korisnika
-   */
   private async prijava(req: Request, res: Response): Promise<void> {
     try {
-      const { korisnickoIme, lozinka } = req.body;
+      const { username, password } = req.body;
 
-      // Validacija input parametara
-      const rezultat = validacijaPodatakaAuth(korisnickoIme, lozinka);
-
-      if (!rezultat.uspesno) {
-        res.status(400).json({ success: false, message: rezultat.poruka });
+      // Validacija inputa
+      const validacijaOK = validacijaPodatakaAuth(username, password);
+      if (!validacijaOK.uspesno) {
+        res.status(400).json({ success: false, message: validacijaOK.poruka });
         return;
       }
 
-      const result = await this.authService.prijava(korisnickoIme, lozinka);
+      const result = await this.authUser.prijava(username, password);
 
-      // Proveravamo da li je prijava uspešna
       if (result.id !== 0) {
-        // Kreiranje jwt tokena
         const token = jwt.sign(
-          { 
-            id: result.id, 
-            korisnickoIme: result.korisnickoIme, 
-            uloga: result.uloga,
-          }, process.env.JWT_SECRET ?? "", { expiresIn: '6h' });
+          {
+            id: result.id,
+            korisnickoIme: result.username,
+            uloga: result.role,
+          },
+          process.env.JWT_SECRET ?? "",
+          { expiresIn: "6h" }
+        );
 
-        res.status(200).json({success: true, message: 'Uspešna prijava', data: token});
-        return;
+        res.status(200).json({ success: true, message: "Uspešna prijava", data: token });
       } else {
-        res.status(401).json({success: false, message: 'Неисправно корисничко име или лозинка'});
-        return;
+        res.status(401).json({ success: false, message: "Neispravno korisničko ime ili lozinka" });
       }
     } catch (error) {
-      console.log(error);
-      res.status(500).json({success: false, message: error});
+      console.error(error);
+      res.status(500).json({ success: false, message: "Desila se greška na serveru" });
     }
   }
 
-  /**
-   * POST /api/v1/auth/register
-   * Registracija novog korisnika
-   */
   private async registracija(req: Request, res: Response): Promise<void> {
     try {
-      const { korisnickoIme, lozinka, uloga } = req.body;
-      const rezultat = validacijaPodatakaAuth(korisnickoIme, lozinka);
+      const { imePrezime, username, password, role } = req.body;
 
-      if (!rezultat.uspesno) {
-        res.status(400).json({ success: false, message: rezultat.poruka });
+      const validacijaOK = validacijaPodatakaAuth(username, password);
+      if (!validacijaOK.uspesno) {
+        res.status(400).json({ success: false, message: validacijaOK.poruka });
         return;
       }
 
-      const result = await this.authService.registracija(korisnickoIme, uloga, lozinka);
-      
-      // Proveravamo da li je registracija uspešna
+      const result = await this.authUser.registracija(imePrezime, username, role, password);
+
       if (result.id !== 0) {
-        // Kreiranje jwt tokena
         const token = jwt.sign(
-          { 
-            id: result.id, 
-            korisnickoIme: result.korisnickoIme, 
-            uloga: result.uloga,
-          }, process.env.JWT_SECRET ?? "", { expiresIn: '6h' });
+          {
+            id: result.id,
+            korisnickoIme: result.username,
+            uloga: result.role,
+          },
+          process.env.JWT_SECRET ?? "",
+          { expiresIn: "6h" }
+        );
 
-
-        res.status(201).json({success: true, message: 'Uspešna registracija', data: token});
+        res.status(201).json({ success: true, message: "Uspešna registracija", data: token });
       } else {
-        res.status(401).json({success: false, message: 'Регистрација није успела. Корисничко име већ постоји.', });
+        res.status(401).json({ success: false, message: "Registracija nije uspela. Korisničko ime već postoji." });
       }
     } catch (error) {
-      res.status(500).json({success: false, message: error});
+      console.error(error);
+      res.status(500).json({ success: false, message: "Desila se greška na serveru" });
     }
   }
 
-  /**
-   * Getter za router
-   */
   public getRouter(): Router {
     return this.router;
   }

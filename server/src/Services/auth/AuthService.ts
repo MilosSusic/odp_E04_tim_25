@@ -1,42 +1,45 @@
-import { UserAuthDataDto } from "../../Domain/DTOs/auth/UserAuthDataDto";
+import { UserAuthDataDto } from "../../Domain/DTOs/auth/UserAuthDto";
 import { User } from "../../Domain/models/User";
-import { IUserRepository } from "../../Domain/repositories/users/IUserRepository";
+import { IUserRepository } from "../../Domain/repositories/user/IUserRepository";
 import { IAuthService } from "../../Domain/services/auth/IAuthService";
 import bcrypt from "bcryptjs";
 
 export class AuthService implements IAuthService {
-  private readonly saltRounds: number = parseInt(process.env.SALT_ROUNDS || "10", 10);
 
-  public constructor(private userRepository: IUserRepository) {}
+  private userRepo: IUserRepository;
+  private readonly saltRounds: number = parseInt(process.env.SALT_ROUNDS ?? "10", 10);
 
-  async prijava(korisnickoIme: string, lozinka: string): Promise<UserAuthDataDto> {
-    const user = await this.userRepository.getByUsername(korisnickoIme);
 
-    if (user.id !== 0 && await bcrypt.compare(lozinka, user.lozinka)) {
-      return new UserAuthDataDto(user.id, user.korisnickoIme, user.uloga);
-    }
-
-    return new UserAuthDataDto(); // Neispravno korisničko ime ili lozinka
+  public constructor(userRepo: IUserRepository) {
+    this.userRepo = userRepo;
   }
 
-  async registracija(korisnickoIme: string, uloga: string, lozinka: string): Promise<UserAuthDataDto> {
-    const existingUser = await this.userRepository.getByUsername(korisnickoIme);
-    
-    if (existingUser.id !== 0) {
-      return new UserAuthDataDto(); // Korisnik već postoji
+  async prijava(username: string, password: string): Promise<UserAuthDataDto> {
+    const user = await this.userRepo.getByUsername(username);
+
+    if (user.id !== 0 && await bcrypt.compare(password, user.password)) {
+      return new UserAuthDataDto(user.id, user.username, user.role);
     }
 
-    // Hash-ujemo lozinku pre čuvanja
-    const hashedPassword = await bcrypt.hash(lozinka, this.saltRounds);
+    return new UserAuthDataDto();
+  }
 
-    const newUser = await this.userRepository.create(
-      new User(0, korisnickoIme, uloga, hashedPassword)
+  async registracija(imePrezime: string, username: string, role: string, password: string): Promise<UserAuthDataDto> {
+    const existingUser = await this.userRepo.getByUsername(username);
+    const hashedPassword = await bcrypt.hash(password, this.saltRounds);
+
+    const newUser = await this.userRepo.create(
+      new User(0, imePrezime, username, role, hashedPassword)
     );
 
-    if (newUser.id !== 0) {
-      return new UserAuthDataDto(newUser.id, newUser.korisnickoIme, newUser.uloga);
+    if (existingUser.id !== 0) {
+      return new UserAuthDataDto();
     }
 
-    return new UserAuthDataDto(); // Registracija nije uspela
+    if (newUser.id !== 0) {
+      return new UserAuthDataDto(newUser.id, newUser.username, newUser.role);
+    }
+    return new UserAuthDataDto();
   }
+
 }
