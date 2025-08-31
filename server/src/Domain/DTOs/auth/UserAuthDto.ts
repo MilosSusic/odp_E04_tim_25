@@ -3,5 +3,6 @@ export class UserAuthDataDto {
         public id: number = 0,
         public username: string = '',
         public role: string = 'stanar'
+        
     ) { }
 }
