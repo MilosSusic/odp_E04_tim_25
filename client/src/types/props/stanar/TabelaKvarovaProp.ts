@@ -1,4 +1,4 @@
-import type { Fault } from "../../../models/fault/Fault";
+import type { Fault } from "../../../models/kvar/Kvar";
 
 export type TabelaKvarovaProps = {
   items: Fault[];

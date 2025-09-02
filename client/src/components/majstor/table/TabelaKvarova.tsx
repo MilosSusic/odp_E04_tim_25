@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useAuth } from "../../../hooks/auth/useAuthHook";
 import { ObrišiVrednostPoKljuču } from "../../../helpers/local_storage";
-import type { IFaultService } from "../../../api_services/fault/IFaultService";
-import { faultApi } from "../../../api_services/fault/FaultService";
-import type { Fault } from "../../../models/fault/Fault";
-import type { FaultStatus } from "../../../models/fault/FaultStatus";
+import type { IKvarServis } from "../../../api_services/kvar/IKvarServis";
+import { faultApi } from "../../../api_services/kvar/KvarServis";
+import type { Fault } from "../../../models/kvar/Kvar";
+import type { FaultStatus } from "../../../models/kvar/KvarStatus";
 import ZakljuciRadDialog from "../form/ZakljuciRadDialog";
 
 type StatusFilter = FaultStatus | "svi";
 
 type Props = {
-  api?: IFaultService;
+  api?: IKvarServis;
   token?: string;
 };
 

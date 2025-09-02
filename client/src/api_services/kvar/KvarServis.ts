@@ -1,7 +1,7 @@
 import axios from "axios";
-import type { Fault } from "../../models/fault/Fault";
-import type { IFaultService } from "../fault/IFaultService";
-import type { FaultStatus } from "../../models/fault/FaultStatus";
+import type { Fault } from "../../models/kvar/Kvar";
+import type { IKvarServis } from "../kvar/IKvarServis";
+import type { FaultStatus } from "../../models/kvar/KvarStatus";
 
 const API_URL: string = import.meta.env.VITE_API_URL + "/faults";
 
@@ -17,7 +17,8 @@ function normalizeToArray<T>(x: T | T[] | undefined | null): T[] {
 
 type ApiEnvelope<T> = { success: boolean; message?: string; data?: T };
 
-export const faultApi: IFaultService = {
+
+export const faultApi: IKvarServis = {
 
     async getMyFaults(token, userId) {
         const res = await axios.get(`${API_URL}/user/${userId}`, { headers: authHeader(token) });

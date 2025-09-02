@@ -4,7 +4,7 @@ import PrijavaStranica from "./pages/auth/PrijavaStranica";
 import RegistracijaStranica from "./pages/auth/RegistracijaStranica";
 import { ProtectedRoute } from "./components/protectedRoute/ProtectedRoute";
 import KontrolnaTablaStanaraStranica from "./pages/kontrolnaTabla/KontrolnaTablaStanarStranica";
-import { faultApi } from "./api_services/fault/FaultService";
+import { faultApi } from "./api_services/kvar/KvarServis";
 import KontrolnaTablaMajstorStranica from "./pages/kontrolnaTabla/KontrolnaTablaMajstorStranica";
 import NotFoundPage from "./pages/notFound/NotFoundPage";
 

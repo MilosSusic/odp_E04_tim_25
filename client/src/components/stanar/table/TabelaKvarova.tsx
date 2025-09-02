@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../../hooks/auth/useAuthHook";
 import { ObrišiVrednostPoKljuču } from "../../../helpers/local_storage";
-import type { IFaultService } from "../../../api_services/fault/IFaultService";
-import type { Fault } from "../../../models/fault/Fault";
-import type { FaultStatus } from "../../../models/fault/FaultStatus";
+import type { IKvarServis} from "../../../api_services/kvar/IKvarServis";
+import type { Fault } from "../../../models/kvar/Kvar";
+import type { FaultStatus } from "../../../models/kvar/KvarStatus";
 import { DodajKvarForma } from "../form/DodajKvarForma";
 
 interface TabelaKvarovaProps {
-    faultApi: IFaultService;
+    faultApi: IKvarServis;
 }
 type StatusFilter = FaultStatus | "svi";
 type SortKey = "opadajuce-datum" | "rastuce-datum" | "opadajuce-cijena" | "rastuce-cijena";

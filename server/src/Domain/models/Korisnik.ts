@@ -1,4 +1,4 @@
-export class User {
+export class Korisnik {
     public constructor(
         public id: number = 0,
         public imePrezime: string = '',

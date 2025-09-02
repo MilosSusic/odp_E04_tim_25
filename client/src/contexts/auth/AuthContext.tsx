@@ -19,6 +19,7 @@ const decodeJWT = (token: string): JwtTokenClaims | null => {
                 uloga: decoded.uloga,
             };
         }
+        
         return null;
     } catch (error) {
         console.error("Greška pri dekodiranju JWT tokena:", error);

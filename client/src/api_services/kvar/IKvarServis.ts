@@ -1,7 +1,7 @@
-import type { Fault } from "../../models/fault/Fault";
-import type { FaultStatus } from "../../models/fault/FaultStatus";
+import type { Fault } from "../../models/kvar/Kvar";
+import type { FaultStatus } from "../../models/kvar/KvarStatus";
 
-export interface IFaultService {
+export interface IKvarServis {
   getMyFaults(token: string, userId: number): Promise<Fault[]>;
   getAllFaults(token: string): Promise<Fault[]>;
   getFaultsByStatus(token: string, status: FaultStatus): Promise<Fault[]>;

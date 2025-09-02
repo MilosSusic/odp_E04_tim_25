@@ -1,6 +1,6 @@
-import type { FaultStatus } from "../types/FaultStatus";
+import type { FaultStatus } from "../types/KvarStatus";
 
-export class Fault {
+export class Kvar {
   public constructor(
     public id: number = 0,
     public userId: number = 0,
