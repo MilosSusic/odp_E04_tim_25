@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import type { IFaultService } from "../../../api_services/fault/IFaultService";
-import type { Fault } from "../../../models/fault/Fault";
+import type { IKvarServis } from "../../../api_services/kvar/IKvarServis";
+import type { Fault } from "../../../models/kvar/Kvar";
 
 type Props = {
-    faultApi: IFaultService;
+    faultApi: IKvarServis;
     token: string;
     userId: number;
     onCreated: (created: Fault) => void;

@@ -1,4 +1,4 @@
-import type { FaultStatus } from "./FaultStatus";
+import type { FaultStatus } from "./KvarStatus";
 
 export class Fault {
   id: number = 0;

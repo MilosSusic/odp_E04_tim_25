@@ -1,6 +1,6 @@
-import type { Fault } from './Fault';
+import type { Fault } from './Kvar';
 
-export interface FaultResponse {
+export interface KvarOdgovor {
     success: boolean;
     message?: string;
     data?: Fault | Fault[];

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PročitajVrednostPoKljuču } from "../../helpers/local_storage";
 import { useAuth } from "../../hooks/auth/useAuthHook";
-import type { KontrolnaTablaStranicaProp } from "../../types/props/fault/KontrolnaTablaStanarProp";
+import type { KontrolnaTablaStranicaProp } from "../../types/props/kvar/KontrolnaTablaStanarProp";
 import { TabelaKvarova } from "../../components/stanar/table/TabelaKvarova";
 
 export default function KontrolnaTablaStanaraStranica({ faultApi }: KontrolnaTablaStranicaProp) {

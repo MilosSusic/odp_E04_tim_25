@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PročitajVrednostPoKljuču } from "../../helpers/local_storage";
 import { useAuth } from "../../hooks/auth/useAuthHook";
-import type { KontrolnaTablaMajstorProp } from "../../types/props/fault/KontrolnaTablaMajstorStranica";
+import type { KontrolnaTablaMajstorProp } from "../../types/props/kvar/KontrolnaTablaMajstorStranica";
 import TabelaKvarova from "../../components/majstor/table/TabelaKvarova";
 
 

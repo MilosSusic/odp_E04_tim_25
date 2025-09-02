@@ -1,5 +1,5 @@
-import type { Fault } from "../../../models/fault/Fault";
-import type { FaultStatus } from "../../../models/fault/FaultStatus";
+import type { Fault } from "../../../models/kvar/Kvar";
+import type { FaultStatus } from "../../../models/kvar/KvarStatus";
 
 type Props = {
   kvar: Fault;

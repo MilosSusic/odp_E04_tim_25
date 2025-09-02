@@ -1,17 +1,16 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import db from "../../connections/DbConnectionPool";
-import { IFaultRepository } from "../../../Domain/repositories/fault/IFaultRepository";
-import { Fault } from "../../../Domain/models/Fault";
-import { FaultDto } from "../../../Domain/DTOs/fault/FaultDto";
-import type { FaultStatus } from "../../../Domain/types/FaultStatus";
+import { IKvarRepozitorijum } from "../../../Domain/repositories/kvar/IKvarRepozitorijum";
+import { Kvar } from "../../../Domain/models/Kvar";
+import { KvarDto } from "../../../Domain/DTOs/kvar/KvarDto";
+import type { FaultStatus } from "../../../Domain/types/KvarStatus";
 
+export class KvarRepozitorijum implements IKvarRepozitorijum {
 
-export class FaultRepository implements IFaultRepository {
-
-  async create(fault: Fault): Promise<Fault> {
+  async create(fault: Kvar): Promise<Kvar> {
     try {
       const query = `
-        INSERT INTO faults (userId, commentId, name, description, imageUrl, status, createdAt) 
+        INSERT INTO kvarovi (userId, commentId, name, description, imageUrl, status, createdAt) 
         VALUES (?, ?, ?, ?, ?, ?, ?)
       `;
       const [result] = await db.execute<ResultSetHeader>(query, [
@@ -25,7 +24,7 @@ export class FaultRepository implements IFaultRepository {
       ]);
 
       if (result.insertId) {
-        return new Fault(
+        return new Kvar(
           result.insertId,
           fault.userId,
           fault.commentId,
@@ -36,26 +35,26 @@ export class FaultRepository implements IFaultRepository {
           fault.createdAt
         );
       }
-      return new Fault();
+      return new Kvar();
     } catch (error) {
-      console.error("Error creating fault:", error);
-      return new Fault();
+      console.error("Greška pri kreiranju kvara:", error);
+      return new Kvar();
     }
   }
 
-  async getById(id: number): Promise<FaultDto> {
+  async getById(id: number): Promise<KvarDto> {
     try {
       const query = `
-        SELECT f.*, c.comment, CAST(c.price AS DECIMAL(10,2)) AS price
-        FROM faults f 
-        LEFT JOIN comments c ON f.commentId = c.id
-        WHERE f.id = ?
+        SELECT k.*, kom.comment, CAST(kom.price AS DECIMAL(10,2)) AS price
+        FROM kvarovi k
+        LEFT JOIN komentari kom ON k.commentId = kom.id
+        WHERE k.id = ?
       `;
       const [rows] = await db.execute<RowDataPacket[]>(query, [id]);
 
       if (rows.length > 0) {
         const row = rows[0];
-        return new FaultDto(
+        return new KvarDto(
           row.id,
           row.userId,
           row.name,
@@ -67,24 +66,23 @@ export class FaultRepository implements IFaultRepository {
           row.price
         );
       }
-      return new FaultDto();
+      return new KvarDto();
     } catch (error) {
-      console.error("Error getting fault by ID:", error);
-      return new FaultDto();
+      console.error("Greška pri dohvatanju kvara po ID:", error);
+      return new KvarDto();
     }
   }
 
-  // Dohvati kvar po statusu
-  async getByStatus(status: FaultStatus): Promise<FaultDto[]> {
+  async getByStatus(status: FaultStatus): Promise<KvarDto[]> {
     try {
       const query = `
-        SELECT f.*, c.comment, CAST(c.price AS DECIMAL(10,2)) AS price
-        FROM faults f
-        LEFT JOIN comments c ON f.commentId = c.id
-        WHERE f.status = ?
+        SELECT k.*, kom.comment, CAST(kom.price AS DECIMAL(10,2)) AS price
+        FROM kvarovi k
+        LEFT JOIN komentari kom ON k.commentId = kom.id
+        WHERE k.status = ?
       `;
       const [rows] = await db.execute<RowDataPacket[]>(query, [status]);
-      return rows.map(row => new FaultDto(
+      return rows.map(row => new KvarDto(
         row.id,
         row.userId,
         row.name,
@@ -96,21 +94,21 @@ export class FaultRepository implements IFaultRepository {
         row.price
       ));
     } catch (error) {
-      console.error("Error fetching faults by status:", error);
+      console.error("Greška pri dohvatanju kvarova po statusu:", error);
       return [];
     }
   }
 
-  async getAll(): Promise<FaultDto[]> {
+  async getAll(): Promise<KvarDto[]> {
     try {
       const query = `
-        SELECT f.*, c.comment, CAST(c.price AS DECIMAL(10,2)) AS price
-        FROM faults f
-        LEFT JOIN comments c ON f.commentId = c.id
-        ORDER BY f.id ASC
+        SELECT k.*, kom.comment, CAST(kom.price AS DECIMAL(10,2)) AS price
+        FROM kvarovi k
+        LEFT JOIN komentari kom ON k.commentId = kom.id
+        ORDER BY k.id ASC
       `;
       const [rows] = await db.execute<RowDataPacket[]>(query);
-      return rows.map(row => new FaultDto(
+      return rows.map(row => new KvarDto(
         row.id,
         row.userId,
         row.name,
@@ -122,16 +120,16 @@ export class FaultRepository implements IFaultRepository {
         row.price
       ));
     } catch (error) {
-      console.error("Error fetching all faults:", error);
+      console.error("Greška pri dohvatanju svih kvarova:", error);
       return [];
     }
   }
 
-  async update(fault: Fault): Promise<Fault> {
+  async update(fault: Kvar): Promise<Kvar> {
     try {
       const query = `
-        UPDATE faults 
-        SET description = ?, status = ?, imageUrl = ? 
+        UPDATE kvarovi
+        SET description = ?, status = ?, imageUrl = ?
         WHERE id = ?
       `;
       const [result] = await db.execute<ResultSetHeader>(query, [
@@ -144,24 +142,24 @@ export class FaultRepository implements IFaultRepository {
       if (result.affectedRows > 0) {
         return fault;
       }
-      return new Fault();
+      return new Kvar();
     } catch (error) {
-      console.error("Error updating fault:", error);
-      return new Fault();
+      console.error("Greška pri ažuriranju kvara:", error);
+      return new Kvar();
     }
   }
 
-  async getFaultsByUser(userId: number): Promise<FaultDto[]> {
+  async getFaultsByUser(userId: number): Promise<KvarDto[]> {
     try {
       const query = `
-        SELECT f.*, c.comment, CAST(c.price AS DECIMAL(10,2)) AS price
-        FROM faults f
-        LEFT JOIN comments c ON f.commentId = c.id
-        WHERE f.userId = ?
-        ORDER BY f.createdAt DESC
+        SELECT k.*, kom.comment, CAST(kom.price AS DECIMAL(10,2)) AS price
+        FROM kvarovi k
+        LEFT JOIN komentari kom ON k.commentId = kom.id
+        WHERE k.userId = ?
+        ORDER BY k.createdAt DESC
       `;
       const [rows] = await db.execute<RowDataPacket[]>(query, [userId]);
-      return rows.map(row => new FaultDto(
+      return rows.map(row => new KvarDto(
         row.id,
         row.userId,
         row.name,
@@ -173,36 +171,36 @@ export class FaultRepository implements IFaultRepository {
         row.price
       ));
     } catch (error) {
-      console.error("Error fetching user faults:", error);
+      console.error("Greška pri dohvatanju kvarova korisnika:", error);
       return [];
     }
   }
 
-  async updateFaultStatus(faultId: number, status: FaultStatus): Promise<FaultDto> {
+  async updateFaultStatus(faultId: number, status: FaultStatus): Promise<KvarDto> {
     try {
-      const query = `UPDATE faults SET status = ? WHERE id = ?`;
+      const query = `UPDATE kvarovi SET status = ? WHERE id = ?`;
       const [result] = await db.execute<ResultSetHeader>(query, [status, faultId]);
 
       if (result.affectedRows > 0) {
         return this.getById(faultId);
       }
-      return new FaultDto();
+      return new KvarDto();
     } catch (error) {
-      console.error("Error updating fault status:", error);
-      return new FaultDto();
+      console.error("Greška pri ažuriranju statusa kvara:", error);
+      return new KvarDto();
     }
   }
 
-  async getAllFaultsWithComments(): Promise<FaultDto[]> {
+  async getAllFaultsWithComments(): Promise<KvarDto[]> {
     try {
       const query = `
-        SELECT f.*, c.comment, c.price
-        FROM faults f
-        LEFT JOIN comments c ON f.commentId = c.id
-        ORDER BY f.createdAt DESC
+        SELECT k.*, kom.comment, kom.price
+        FROM kvarovi k
+        LEFT JOIN komentari kom ON k.commentId = kom.id
+        ORDER BY k.createdAt DESC
       `;
       const [rows] = await db.execute<RowDataPacket[]>(query);
-      return rows.map(row => new FaultDto(
+      return rows.map(row => new KvarDto(
         row.id,
         row.userId,
         row.name,
@@ -214,12 +212,12 @@ export class FaultRepository implements IFaultRepository {
         row.price
       ));
     } catch (error) {
-      console.error("Error fetching all faults with comments:", error);
+      console.error("Greška pri dohvatanju svih kvarova sa komentarima:", error);
       return [];
     }
   }
 
-  async resolveFault(faultId: number, status: string, comment: string, price: number): Promise<FaultDto> {
+  async resolveFault(faultId: number, status: string, comment: string, price: number): Promise<KvarDto> {
 
     const hasGetConn = typeof (db as any).getConnection === "function";
     const conn: any = hasGetConn ? await (db as any).getConnection() : db;
@@ -229,14 +227,14 @@ export class FaultRepository implements IFaultRepository {
       if (hasTx) await conn.beginTransaction();
 
       const [ins] = (await conn.execute(
-        "INSERT INTO comments (comment, price) VALUES (?, ?)",
+        "INSERT INTO komentari (comment, price) VALUES (?, ?)",
         [comment, price]
       )) as [ResultSetHeader, unknown];
 
       const commentId = ins.insertId;
 
       await conn.execute(
-        "UPDATE faults SET status = ?, commentId = ? WHERE id = ?",
+        "UPDATE kvarovi SET status = ?, commentId = ? WHERE id = ?",
         [status, commentId, faultId]
       );
 
@@ -245,8 +243,8 @@ export class FaultRepository implements IFaultRepository {
       return await this.getById(faultId);
     } catch (err) {
       if (hasTx && typeof conn.rollback === "function") await conn.rollback();
-      console.error("Error resolveFault:", err);
-      return new FaultDto();
+      console.error("Greška pri resolveFault:", err);
+      return new KvarDto();
     } finally {
       if (hasGetConn && typeof conn.release === "function") conn.release();
     }

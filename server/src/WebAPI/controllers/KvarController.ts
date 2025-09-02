@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
-import { IFaultService } from "../../Domain/services/fault/IFaultService";
-import { Fault } from "../../Domain/models/Fault";
-import { normalizeFaultStatus } from "../../Domain/types/FaultStatus";
+import { IFaultService } from "../../Domain/services/kvar/IKvarServis";
+import { Kvar } from "../../Domain/models/Kvar";
+import { normalizeFaultStatus } from "../../Domain/types/KvarStatus";
 
 export class FaultController {
   private router: Router;
@@ -63,7 +63,7 @@ export class FaultController {
   private async createFault(req: Request, res: Response) {
     try {
       const { userId, name, description, imageUrl } = req.body;
-      const fault = new Fault(0, userId, 0, name, description, imageUrl);
+      const fault = new Kvar(0, userId, 0, name, description, imageUrl);
       const result = await this.faultService.createFault(fault);
       res.status(201).json({ success: true, data: result });
     } catch {

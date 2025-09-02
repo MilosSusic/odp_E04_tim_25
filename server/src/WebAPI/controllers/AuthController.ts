@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { IAuthService } from "../../Domain/services/auth/IAuthService";
+import { IAuthService } from "../../Domain/services/auth/IAuthServis";
 import { validacijaPodatakaAuth } from "../validators/auth/AuthRequestValidator";
 import jwt from "jsonwebtoken";
 
